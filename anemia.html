@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approach to Anemia</title>
+    <style>
+        .node {
+            cursor: pointer;
+        }
+        .node rect {
+            fill: #fff;
+            stroke: steelblue;
+            stroke-width: 2px;
+        }
+        .node text {
+            font: 12px sans-serif;
+            pointer-events: none;
+            text-anchor: middle;
+        }
+        .link {
+            fill: none;
+            stroke: #ccc;
+            stroke-width: 2px;
+        }
+        .node a {
+            text-decoration: none;
+            color: steelblue;
+        }
+        .node a:hover {
+            text-decoration: underline;
+        }
+        #tooltip {
+            position: absolute;
+            text-align: center;
+            max-width: 200px;
+            padding: 5px;
+            font: 12px sans-serif;
+            background: lightyellow;
+            border: 1px solid steelblue;
+            border-radius: 4px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <div id="tree-container"></div>
+    <div id="tooltip"></div>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+        const treeData = [
+            { id: 1, parent: null, name: "Anemia", hoverText: "Hgb<br /> < 13.2 g/dL men<br /> < 11.6 g/dL women" },
+            { id: 7, parent: 1, name: "Reticulocytes", url: "https://en.wikipedia.org/wiki/Reticulocyte", hoverText: "Determine if the anemia is<br />hypoproliferative or hyperproliferative" },
+            { id: 8, parent: 7, name: "Hyperproliferative Anemia", hoverText: "> 2% reticulocytes" },
+            { id: 9, parent: 7, name: "Hypoproliferative Anemia", hoverText: "< 2% reticulocytes" },
+            { id: 2, parent: 9, name: "Blood count"},
+            { id: 3, parent: 2, name: "Iron deficiency", hoverText: "Ferritin < 12 ug/L"},
+            { id: 4, parent: 2, name: "Other results"},
+            { id: 5, parent: 3, name: "Iron deficiency anemia", url: "https://en.wikipedia.org/wiki/Iron_deficiency_anemia"},
+            { id: 6, parent: 4, name: "Other type of anemia"},
+        ];
+
+        const margin = { top: 20, right: 90, bottom: 30, left: 90 },
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+        const svg = d3.select("#tree-container").append("svg")
+            .attr("width", width + margin.right + margin.left)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        const treemap = d3.tree().size([width, height]);
+
+        let nodes = d3.stratify()
+            .id(d => d.id)
+            .parentId(d => d.parent)
+            (treeData);
+
+        nodes = treemap(nodes);
+
+        const link = svg.selectAll(".link")
+            .data(nodes.descendants().slice(1))
+            .enter().append("path")
+            .attr("class", "link")
+            .attr("d", d => {
+                return "M" + d.x + "," + d.y
+                    + "C" + d.x + "," + (d.y + d.parent.y) / 2
+                    + " " + d.parent.x + "," + (d.y + d.parent.y) / 2
+                    + " " + d.parent.x + "," + d.parent.y;
+            });
+
+        const node = svg.selectAll(".node")
+            .data(nodes.descendants())
+            .enter().append("g")
+            .attr("class", "node")
+            .attr("transform", d => "translate(" + d.x + "," + d.y + ")")
+            .on('mouseover', function(d, event) {
+                if (!d.data.hoverText) { return; }
+                const tooltip = d3.select("#tooltip");
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                tooltip.html(d.data.hoverText || "")
+                    .style("left", (d3.event.pageX + 10) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            })
+            .on('mousemove', function() {
+                if (!d.data.hoverText) { return; }
+                d3.select("#tooltip")
+                    .style("left", (d3.event.pageX + 10) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            })
+            .on('mouseout', function() {
+                d3.select("#tooltip").transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+
+        // Add rectangles for nodes
+        node.append("rect")
+            .attr("width", d => {
+                const padding = 20;
+                return Math.max(100, d.data.name.length * 8 + padding); // Adjust width based on text length
+            })
+            .attr("height", 30)
+            .attr("x", d => -Math.max(100, d.data.name.length * 8 + 20) / 2) // Center rectangle horizontally
+            .attr("y", -15) // Center rectangle vertically
+            .attr("rx", 8) // Rounded corners
+            .attr("ry", 8) // Rounded corners
+            .style("fill", "#fff")
+            .style("stroke", "steelblue")
+            .style("stroke-width", "2px");
+
+        // Add text inside rectangles
+        node.append("text")
+            .attr("dy", ".35em")
+            .html(d => {
+                if (d.data.url) {
+                    return `<a href="${d.data.url}" target="_blank">${d.data.name}</a>`;
+                } else {
+                    return d.data.name;
+                }
+            })
+            .attr("x", 0) // Center text horizontally
+            .attr("y", 0) // Center text vertically
+            .attr("text-anchor", "middle"); // Center text
+
+        // Ensure that URLs are clickable
+        svg.selectAll("a")
+            .attr("pointer-events", "all"); // Allow links to be clickable
+    </script>
+</body>
+</html>
