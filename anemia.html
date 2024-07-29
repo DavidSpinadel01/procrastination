@@ -61,6 +61,17 @@
             { id: 4, parent: 2, name: "Other results"},
             { id: 5, parent: 3, name: "Iron deficiency anemia", url: "https://en.wikipedia.org/wiki/Iron_deficiency_anemia"},
             { id: 6, parent: 4, name: "Other type of anemia"},
+            { id: 10, parent: 8, name: "Hemolysis?"},
+            { id: 11, parent: 10, name: "No"},
+            { id: 12, parent: 11, name: "Bleeding"},
+            { id: 13, parent: 10, name: "Yes", hoverText: "LDH&uarr;, BU&uarr;, Hp&darr;"},
+            { id: 14, parent: 13, name: "Blood smear", url: "https://en.wikipedia.org/wiki/Blood_smear"},
+            { id: 15, parent: 14, name: "Schistocytes", url: "https://en.wikipedia.org/wiki/Schistocyte"},
+            { id: 16, parent: 14, name: "Spherocytes / Elliptocytes / Stomatocytes"},
+            { id: 17, parent: 14, name: "Thalasemia / Sickle cell"},
+            { id: 18, parent: 14, name: "Bite cells"},
+            { id: 19, parent: 14, name: "Normal"},
+
         ];
 
         const margin = { top: 20, right: 90, bottom: 30, left: 90 },
@@ -123,11 +134,11 @@
         // Add rectangles for nodes
         node.append("rect")
             .attr("width", d => {
-                const padding = 20;
-                return Math.max(100, d.data.name.length * 8 + padding); // Adjust width based on text length
+                const padding = 10;
+                return Math.max(100, d.data.name.length * 7 + padding); // Adjust width based on text length
             })
             .attr("height", 30)
-            .attr("x", d => -Math.max(100, d.data.name.length * 8 + 20) / 2) // Center rectangle horizontally
+            .attr("x", d => -Math.max(100, d.data.name.length * 7 + 10) / 2) // Center rectangle horizontally
             .attr("y", -15) // Center rectangle vertically
             .attr("rx", 8) // Rounded corners
             .attr("ry", 8) // Rounded corners
