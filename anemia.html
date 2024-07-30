@@ -4,165 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Approach to Anemia</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.1.54/go.js"></script>
     <style>
-        .node {
-            cursor: pointer;
-        }
-        .node rect {
-            fill: #fff;
-            stroke: steelblue;
-            stroke-width: 2px;
-        }
-        .node text {
-            font: 12px sans-serif;
-            pointer-events: none;
-            text-anchor: middle;
-        }
-        .link {
-            fill: none;
-            stroke: #ccc;
-            stroke-width: 2px;
-        }
-        .node a {
-            text-decoration: none;
-            color: steelblue;
-        }
-        .node a:hover {
-            text-decoration: underline;
-        }
-        #tooltip {
-            position: absolute;
-            text-align: center;
-            max-width: 200px;
-            padding: 5px;
-            font: 12px sans-serif;
-            background: lightyellow;
-            border: 1px solid steelblue;
-            border-radius: 4px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-            white-space: nowrap;
+        #myDiagramDiv {
+            width: 100%;
+            height: 600px;
+            border: 1px solid black;
         }
     </style>
 </head>
 <body>
-    <div id="tree-container"></div>
-    <div id="tooltip"></div>
-    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <div id="myDiagramDiv"></div>
     <script>
-        const treeData = [
-            { id: 1, parent: null, name: "Anemia", hoverText: "Hgb<br /> < 13.2 g/dL men<br /> < 11.6 g/dL women" },
-            { id: 7, parent: 1, name: "Reticulocytes", url: "https://en.wikipedia.org/wiki/Reticulocyte", hoverText: "Determine if the anemia is<br />hypoproliferative or hyperproliferative" },
-            { id: 8, parent: 7, name: "Hyperproliferative Anemia", hoverText: "> 2% reticulocytes" },
-            { id: 9, parent: 7, name: "Hypoproliferative Anemia", hoverText: "< 2% reticulocytes" },
-            { id: 2, parent: 9, name: "Blood count"},
-            { id: 3, parent: 2, name: "Iron deficiency", hoverText: "Ferritin < 12 ug/L"},
-            { id: 4, parent: 2, name: "Other results"},
-            { id: 5, parent: 3, name: "Iron deficiency anemia", url: "https://en.wikipedia.org/wiki/Iron_deficiency_anemia"},
-            { id: 6, parent: 4, name: "Other type of anemia"},
-            { id: 10, parent: 8, name: "Hemolysis?"},
-            { id: 11, parent: 10, name: "No"},
-            { id: 12, parent: 11, name: "Bleeding"},
-            { id: 13, parent: 10, name: "Yes", hoverText: "LDH&uarr;, BU&uarr;, Hp&darr;"},
-            { id: 14, parent: 13, name: "Blood smear", url: "https://en.wikipedia.org/wiki/Blood_smear"},
-            { id: 15, parent: 14, name: "Schistocytes", url: "https://en.wikipedia.org/wiki/Schistocyte"},
-            { id: 16, parent: 14, name: "Spherocytes / Elliptocytes / Stomatocytes"},
-            { id: 17, parent: 14, name: "Thalasemia / Sickle cell"},
-            { id: 18, parent: 14, name: "Bite cells"},
-            { id: 19, parent: 14, name: "Normal"},
+        function init() {
+            const $ = go.GraphObject.make;
 
-        ];
+            const myDiagram = $(go.Diagram, "myDiagramDiv",
+                {
+                    initialAutoScale: go.Diagram.Uniform,
+                    layout: $(go.TreeLayout, { angle: 90, layerSpacing: 35 })
+                });
 
-        const margin = { top: 20, right: 90, bottom: 30, left: 90 },
-            width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+            myDiagram.nodeTemplate =
+                $(go.Node, "Auto",
+                    $(go.Shape, "RoundedRectangle", { strokeWidth: 2, stroke: "steelblue", fill: "white" }),
+                    $(go.TextBlock,
+                        {
+                            margin: 8,
+                            font: "bold 12px sans-serif",
+                            isMultiline: false,
+                            wrap: go.TextBlock.WrapFit
+                        },
+                        new go.Binding("text", "name"),
+                        new go.Binding("stroke", "url", function(url) { return url ? "blue" : "black"; })),
+                    {
+                        toolTip: $(go.Adornment, "Auto",
+                            $(go.Shape, { fill: "lightyellow" }),
+                            $(go.TextBlock, { margin: 4 },
+                                new go.Binding("text", "hoverText"))
+                        ),
+                        click: (e, obj) => {
+                            const url = obj.part.data.url;
+                            if (url) window.open(url, "_blank");
+                        }
+                    }
+                );
 
-        const svg = d3.select("#tree-container").append("svg")
-            .attr("width", width + margin.right + margin.left)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            myDiagram.linkTemplate =
+                $(go.Link, { routing: go.Link.Orthogonal, corner: 5 },
+                    $(go.Shape, { strokeWidth: 2, stroke: "#ccc" }));
 
-        const treemap = d3.tree().size([width, height]);
+            const nodeDataArray = [
+                { key: 1, name: "Anemia", hoverText: "Hgb < 13.2 g/dL men < 11.6 g/dL women" },
+                { key: 7, parent: 1, name: "Reticulocytes", url: "https://en.wikipedia.org/wiki/Reticulocyte", hoverText: "Determine if the anemia is hypoproliferative or hyperproliferative" },
+                { key: 8, parent: 7, name: "Hyperproliferative Anemia", hoverText: "> 2% reticulocytes" },
+                { key: 9, parent: 7, name: "Hypoproliferative Anemia", hoverText: "< 2% reticulocytes" },
+                { key: 2, parent: 9, name: "Blood count" },
+                { key: 3, parent: 2, name: "Iron deficiency", hoverText: "Ferritin < 12 ug/L" },
+                { key: 4, parent: 2, name: "Other results" },
+                { key: 5, parent: 3, name: "Iron deficiency anemia", url: "https://en.wikipedia.org/wiki/Iron_deficiency_anemia" },
+                { key: 6, parent: 4, name: "Other type of anemia" },
+                { key: 10, parent: 8, name: "Hemolysis?" },
+                { key: 11, parent: 10, name: "No" },
+                { key: 12, parent: 11, name: "Bleeding" },
+                { key: 13, parent: 10, name: "Yes", hoverText: "LDH\u2191, BU\u2191, Hp\u2193" },
+                { key: 14, parent: 13, name: "Blood smear", url: "https://en.wikipedia.org/wiki/Blood_smear" },
+                { key: 15, parent: 14, name: "Schistocytes", url: "https://en.wikipedia.org/wiki/Schistocyte" },
+                { key: 16, parent: 14, name: "Spherocytes / Elliptocytes / Stomatocytes" },
+                { key: 17, parent: 14, name: "Thalasemia / Sickle cell" },
+                { key: 18, parent: 14, name: "Bite cells" },
+                { key: 19, parent: 14, name: "Normal" }
+            ];
 
-        let nodes = d3.stratify()
-            .id(d => d.id)
-            .parentId(d => d.parent)
-            (treeData);
+            myDiagram.model = new go.TreeModel(nodeDataArray);
 
-        nodes = treemap(nodes);
+            myDiagram.toolManager.mouseMoveTools.insertAt(2, $(CustomTooltipTool));
+        }
 
-        const link = svg.selectAll(".link")
-            .data(nodes.descendants().slice(1))
-            .enter().append("path")
-            .attr("class", "link")
-            .attr("d", d => {
-                return "M" + d.x + "," + d.y
-                    + "C" + d.x + "," + (d.y + d.parent.y) / 2
-                    + " " + d.parent.x + "," + (d.y + d.parent.y) / 2
-                    + " " + d.parent.x + "," + d.parent.y;
-            });
+        function CustomTooltipTool() {
+            go.Tool.call(this);
+        }
+        go.Diagram.inherit(CustomTooltipTool, go.Tool);
 
-        const node = svg.selectAll(".node")
-            .data(nodes.descendants())
-            .enter().append("g")
-            .attr("class", "node")
-            .attr("transform", d => "translate(" + d.x + "," + d.y + ")")
-            .on('mouseover', function(d, event) {
-                if (!d.data.hoverText) { return; }
-                const tooltip = d3.select("#tooltip");
-                tooltip.transition()
-                    .duration(200)
-                    .style("opacity", .9);
-                tooltip.html(d.data.hoverText || "")
-                    .style("left", (d3.event.pageX + 10) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
-            })
-            .on('mousemove', function() {
-                if (!d.data.hoverText) { return; }
-                d3.select("#tooltip")
-                    .style("left", (d3.event.pageX + 10) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
-            })
-            .on('mouseout', function() {
-                d3.select("#tooltip").transition()
-                    .duration(500)
-                    .style("opacity", 0);
-            });
-
-        // Add rectangles for nodes
-        node.append("rect")
-            .attr("width", d => {
-                const padding = 10;
-                return Math.max(100, d.data.name.length * 7 + padding); // Adjust width based on text length
-            })
-            .attr("height", 30)
-            .attr("x", d => -Math.max(100, d.data.name.length * 7 + 10) / 2) // Center rectangle horizontally
-            .attr("y", -15) // Center rectangle vertically
-            .attr("rx", 8) // Rounded corners
-            .attr("ry", 8) // Rounded corners
-            .style("fill", "#fff")
-            .style("stroke", "steelblue")
-            .style("stroke-width", "2px");
-
-        // Add text inside rectangles
-        node.append("text")
-            .attr("dy", ".35em")
-            .html(d => {
-                if (d.data.url) {
-                    return `<a href="${d.data.url}" target="_blank">${d.data.name}</a>`;
-                } else {
-                    return d.data.name;
-                }
-            })
-            .attr("x", 0) // Center text horizontally
-            .attr("y", 0) // Center text vertically
-            .attr("text-anchor", "middle"); // Center text
-
-        // Ensure that URLs are clickable
-        svg.selectAll("a")
-            .attr("pointer-events", "all"); // Allow links to be clickable
+        init();
     </script>
 </body>
 </html>
