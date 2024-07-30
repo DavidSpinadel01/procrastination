@@ -39,6 +39,7 @@
                         new go.Binding("stroke", "url", function(url) { return url ? "blue" : "black"; })),
                     {
                         toolTip: $(go.Adornment, "Auto",
+                            new go.Binding("visible", "hoverText", function(hoverText) { return hoverText != ""}),
                             $(go.Shape, { fill: "lightyellow" }),
                             $(go.TextBlock, { margin: 4 },
                                 new go.Binding("text", "hoverText"))
@@ -54,26 +55,28 @@
                 $(go.Link, { routing: go.Link.Orthogonal, corner: 5 },
                     $(go.Shape, { strokeWidth: 2, stroke: "#ccc" }));
 
+            myDiagram.toolManager.hoverDelay = 200;
+
             const nodeDataArray = [
                 { key: 1, name: "Anemia", hoverText: "Hgb < 13.2 g/dL men < 11.6 g/dL women" },
                 { key: 7, parent: 1, name: "Reticulocytes", url: "https://en.wikipedia.org/wiki/Reticulocyte", hoverText: "Determine if the anemia is hypoproliferative or hyperproliferative" },
                 { key: 8, parent: 7, name: "Hyperproliferative Anemia", hoverText: "> 2% reticulocytes" },
                 { key: 9, parent: 7, name: "Hypoproliferative Anemia", hoverText: "< 2% reticulocytes" },
-                { key: 2, parent: 9, name: "Blood count" },
+                { key: 2, parent: 9, name: "Blood count", hoverText: ""},
                 { key: 3, parent: 2, name: "Iron deficiency", hoverText: "Ferritin < 12 ug/L" },
-                { key: 4, parent: 2, name: "Other results" },
-                { key: 5, parent: 3, name: "Iron deficiency anemia", url: "https://en.wikipedia.org/wiki/Iron_deficiency_anemia" },
-                { key: 6, parent: 4, name: "Other type of anemia" },
-                { key: 10, parent: 8, name: "Hemolysis?" },
-                { key: 11, parent: 10, name: "No" },
-                { key: 12, parent: 11, name: "Bleeding" },
+                { key: 4, parent: 2, name: "Other results", hoverText: "" },
+                { key: 5, parent: 3, name: "Iron deficiency anemia", url: "https://en.wikipedia.org/wiki/Iron_deficiency_anemia", hoverText: "" },
+                { key: 6, parent: 4, name: "Other type of anemia", hoverText: "" },
+                { key: 10, parent: 8, name: "Hemolysis?", hoverText: "" },
+                { key: 11, parent: 10, name: "No", hoverText: "" },
+                { key: 12, parent: 11, name: "Bleeding", hoverText: "" },
                 { key: 13, parent: 10, name: "Yes", hoverText: "LDH\u2191, BU\u2191, Hp\u2193" },
-                { key: 14, parent: 13, name: "Blood smear", url: "https://en.wikipedia.org/wiki/Blood_smear" },
-                { key: 15, parent: 14, name: "Schistocytes", url: "https://en.wikipedia.org/wiki/Schistocyte" },
-                { key: 16, parent: 14, name: "Spherocytes / Elliptocytes / Stomatocytes" },
-                { key: 17, parent: 14, name: "Thalasemia / Sickle cell" },
-                { key: 18, parent: 14, name: "Bite cells" },
-                { key: 19, parent: 14, name: "Normal" }
+                { key: 14, parent: 13, name: "Blood smear", url: "https://en.wikipedia.org/wiki/Blood_smear", hoverText: "" },
+                { key: 15, parent: 14, name: "Schistocytes", url: "https://en.wikipedia.org/wiki/Schistocyte", hoverText: ""},
+                { key: 16, parent: 14, name: "Spherocytes / Elliptocytes / Stomatocytes", hoverText: "" },
+                { key: 17, parent: 14, name: "Thalasemia / Sickle cell", hoverText: "" },
+                { key: 18, parent: 14, name: "Bite cells", hoverText: "" },
+                { key: 19, parent: 14, name: "Normal", hoverText: "" }
             ];
 
             myDiagram.model = new go.TreeModel(nodeDataArray);
