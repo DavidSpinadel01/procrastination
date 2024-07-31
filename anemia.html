@@ -80,14 +80,7 @@
             ];
 
             myDiagram.model = new go.TreeModel(nodeDataArray);
-
-            myDiagram.toolManager.mouseMoveTools.insertAt(2, $(CustomTooltipTool));
         }
-
-        function CustomTooltipTool() {
-            go.Tool.call(this);
-        }
-        go.Diagram.inherit(CustomTooltipTool, go.Tool);
 
         init();
     </script>
